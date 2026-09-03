@@ -15,6 +15,25 @@ import org.junit.jupiter.api.Test
 
 class BlackjackGameTest {
     @Test
+    fun `게임 종료 후 플레이어별 수익과 딜러 수익을 출력한다`() {
+        val input =
+            StubInput(
+                "pobi, jason",
+                mapOf("pobi" to listOf(false), "jason" to listOf(false)),
+                mapOf("pobi" to "10000", "jason" to "20000"),
+            )
+        val output = RecordingOutput()
+        val deck = Deck.ordered(cards(Rank.TEN, Rank.NINE, Rank.ACE, Rank.KING, Rank.TEN, Rank.SEVEN))
+
+        BlackjackGame(deck).start(input, output)
+
+        assertThat(output.playerProfits).containsExactlyEntriesOf(
+            mapOf("pobi" to Amount.from("15000"), "jason" to Amount.from("-20000")),
+        )
+        assertThat(output.dealerProfit).isEqualTo(Amount.from("5000"))
+    }
+
+    @Test
     fun `참가자별 베팅 금액을 입력받아 플레이어를 생성한다`() {
         val input =
             StubInput(
@@ -145,6 +164,8 @@ private class RecordingOutput : GameOutput {
     var dealerRecord: DealerRecord? = null
     val playerResults = mutableMapOf<String, PlayerResult>()
     val initialBettingAmounts = linkedMapOf<String, Amount>()
+    val playerProfits = linkedMapOf<String, Amount>()
+    var dealerProfit: Amount? = null
 
     override fun showInitialHands(
         dealerCard: Card,
