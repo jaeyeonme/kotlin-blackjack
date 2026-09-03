@@ -1,7 +1,7 @@
 package blackjack.application
 
-import blackjack.domain.Card
 import blackjack.domain.Amount
+import blackjack.domain.Card
 import blackjack.domain.Dealer
 import blackjack.domain.DealerRecord
 import blackjack.domain.Deck
@@ -16,7 +16,12 @@ import org.junit.jupiter.api.Test
 class BlackjackGameTest {
     @Test
     fun `참가자별 베팅 금액을 입력받아 플레이어를 생성한다`() {
-        val input = StubInput("pobi, jason", emptyMap(), mapOf("pobi" to "10000", "jason" to "20000"))
+        val input =
+            StubInput(
+                "pobi, jason",
+                mapOf("pobi" to listOf(false), "jason" to listOf(false)),
+                mapOf("pobi" to "10000", "jason" to "20000"),
+            )
         val output = RecordingOutput()
         val deck = Deck.ordered(cards(Rank.TEN, Rank.SEVEN, Rank.FIVE, Rank.SIX, Rank.EIGHT, Rank.NINE))
 

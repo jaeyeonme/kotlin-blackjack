@@ -15,7 +15,7 @@ class BlackjackGame(
         output: GameOutput,
     ) {
         val dealer = Dealer()
-        val players = createPlayers(input.readPlayerNames())
+        val players = createPlayers(input)
         dealInitialCards(listOf(dealer) + players)
         output.showInitialHands(dealer.cards().first(), players)
         playPlayers(players, input, output)
@@ -24,7 +24,12 @@ class BlackjackGame(
         showResults(dealer, players, output)
     }
 
-    private fun createPlayers(names: String): List<Player> = names.split(",").map(String::trim).map(::Player)
+    private fun createPlayers(input: GameInput): List<Player> =
+        input
+            .readPlayerNames()
+            .split(",")
+            .map(String::trim)
+            .map { Player(it, input.readBettingAmount(it)) }
 
     private fun dealInitialCards(participants: List<Participant>) = participants.forEach(::dealTwoCards)
 
