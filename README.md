@@ -6,12 +6,13 @@
 | --- | --- | --- |
 | 1단계 - Kotlin DSL 학습 테스트 | 완료 | [Issue #1](https://github.com/jaeyeonme/kotlin-blackjack/issues/1) · [PR #2](https://github.com/jaeyeonme/kotlin-blackjack/pull/2) |
 | 2단계 - 플레이어 중심 블랙잭 | 완료 | [Issue #3](https://github.com/jaeyeonme/kotlin-blackjack/issues/3) · [PR #4](https://github.com/jaeyeonme/kotlin-blackjack/pull/4) |
-| 3단계 - 딜러와 승패 판정 | 구현 완료 · 리뷰 중 | [Issue #5](https://github.com/jaeyeonme/kotlin-blackjack/issues/5) · [PR #6](https://github.com/jaeyeonme/kotlin-blackjack/pull/6) |
+| 3단계 - 딜러와 승패 판정 | 완료 | [Issue #5](https://github.com/jaeyeonme/kotlin-blackjack/issues/5) · [PR #6](https://github.com/jaeyeonme/kotlin-blackjack/pull/6) |
+| 4단계 - 블랙잭(베팅) | 구현 중 | [Issue #7](https://github.com/jaeyeonme/kotlin-blackjack/issues/7) |
 
-## 3단계 기능 목록
+## 4단계 기능 목록
 
-- 플레이어와 딜러가 카드 수령, 손패 조회와 점수 계산을 공통으로 사용한다.
-- 딜러는 최초 두 장의 합계가 16 이하이면 카드 한 장을 추가로 받고, 17 이상이면 받지 않는다.
-- 최초 배분 결과에는 딜러의 첫 번째 카드와 플레이어의 카드 두 장을 출력한다.
-- 플레이어 관점에서 승·무·패를 판정하고 딜러 전적을 집계한다.
-- 딜러와 플레이어의 최종 손패·점수를 출력한 뒤 승패 결과를 출력한다.
+- 플레이어별 베팅 금액을 입력받아 도메인 값으로 관리한다.
+- 최초 두 장의 카드로 블랙잭 여부를 판단하고 Bust 여부를 제공한다.
+- 일반 승패와 블랙잭 여부에 따라 플레이어별 수익을 계산한다.
+- 플레이어 수익의 합을 반대로 집계해 딜러 수익을 계산한다.
+- 게임 종료 후 딜러와 플레이어별 최종 수익을 출력한다.
