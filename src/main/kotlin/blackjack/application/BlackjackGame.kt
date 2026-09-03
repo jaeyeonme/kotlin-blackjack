@@ -1,11 +1,10 @@
 package blackjack.application
 
 import blackjack.domain.Dealer
-import blackjack.domain.DealerRecord
 import blackjack.domain.Deck
 import blackjack.domain.Participant
 import blackjack.domain.Player
-import blackjack.domain.PlayerResult
+import blackjack.domain.ProfitReport
 
 class BlackjackGame(
     private val deck: Deck,
@@ -15,16 +14,21 @@ class BlackjackGame(
         output: GameOutput,
     ) {
         val dealer = Dealer()
-        val players = createPlayers(input.readPlayerNames())
+        val players = createPlayers(input)
         dealInitialCards(listOf(dealer) + players)
         output.showInitialHands(dealer.cards().first(), players)
         playPlayers(players, input, output)
         playDealer(dealer, output)
         output.showFinalHands(dealer, players)
-        showResults(dealer, players, output)
+        output.showProfits(ProfitReport.from(players, dealer))
     }
 
-    private fun createPlayers(names: String): List<Player> = names.split(",").map(String::trim).map(::Player)
+    private fun createPlayers(input: GameInput): List<Player> =
+        input
+            .readPlayerNames()
+            .split(",")
+            .map(String::trim)
+            .map { Player(it, input.readBettingAmount(it)) }
 
     private fun dealInitialCards(participants: List<Participant>) = participants.forEach(::dealTwoCards)
 
@@ -56,15 +60,6 @@ class BlackjackGame(
         if (!dealer.shouldDraw()) return
         dealer.receive(deck.draw())
         output.showDealerHit()
-    }
-
-    private fun showResults(
-        dealer: Dealer,
-        players: List<Player>,
-        output: GameOutput,
-    ) {
-        val results = players.associateWith { PlayerResult.from(it.score(), dealer.score()) }
-        output.showResults(DealerRecord(results.values.toList()), results)
     }
 
     private companion object {

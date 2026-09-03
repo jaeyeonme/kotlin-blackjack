@@ -2,9 +2,8 @@ package blackjack.application
 
 import blackjack.domain.Card
 import blackjack.domain.Dealer
-import blackjack.domain.DealerRecord
 import blackjack.domain.Player
-import blackjack.domain.PlayerResult
+import blackjack.domain.ProfitReport
 
 interface GameOutput {
     fun showInitialHands(
@@ -21,8 +20,5 @@ interface GameOutput {
         players: List<Player>,
     )
 
-    fun showResults(
-        dealerRecord: DealerRecord,
-        playerResults: Map<Player, PlayerResult>,
-    )
+    fun showProfits(profitReport: ProfitReport)
 }

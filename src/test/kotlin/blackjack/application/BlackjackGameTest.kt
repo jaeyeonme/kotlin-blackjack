@@ -1,18 +1,56 @@
 package blackjack.application
 
+import blackjack.domain.Amount
 import blackjack.domain.Card
 import blackjack.domain.Dealer
-import blackjack.domain.DealerRecord
 import blackjack.domain.Deck
 import blackjack.domain.Participant
 import blackjack.domain.Player
-import blackjack.domain.PlayerResult
+import blackjack.domain.ProfitReport
 import blackjack.domain.Rank
 import blackjack.domain.Suit
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class BlackjackGameTest {
+    @Test
+    fun `게임 종료 후 플레이어별 수익과 딜러 수익을 출력한다`() {
+        val input =
+            StubInput(
+                "pobi, jason",
+                mapOf("pobi" to listOf(false), "jason" to listOf(false)),
+                mapOf("pobi" to "10000", "jason" to "20000"),
+            )
+        val output = RecordingOutput()
+        val deck = Deck.ordered(cards(Rank.TEN, Rank.NINE, Rank.ACE, Rank.KING, Rank.TEN, Rank.SEVEN))
+
+        BlackjackGame(deck).start(input, output)
+
+        assertThat(output.playerProfits).containsExactlyEntriesOf(
+            mapOf("pobi" to Amount.from("15000"), "jason" to Amount.from("-20000")),
+        )
+        assertThat(output.dealerProfit).isEqualTo(Amount.from("5000"))
+    }
+
+    @Test
+    fun `참가자별 베팅 금액을 입력받아 플레이어를 생성한다`() {
+        val input =
+            StubInput(
+                "pobi, jason",
+                mapOf("pobi" to listOf(false), "jason" to listOf(false)),
+                mapOf("pobi" to "10000", "jason" to "20000"),
+            )
+        val output = RecordingOutput()
+        val deck = Deck.ordered(cards(Rank.TEN, Rank.SEVEN, Rank.FIVE, Rank.SIX, Rank.EIGHT, Rank.NINE))
+
+        BlackjackGame(deck).start(input, output)
+
+        assertThat(input.askedBettingNames).containsExactly("pobi", "jason")
+        assertThat(output.initialBettingAmounts).containsExactlyEntriesOf(
+            mapOf("pobi" to Amount.from("10000"), "jason" to Amount.from("20000")),
+        )
+    }
+
     @Test
     fun `최초 배분에는 딜러의 첫 카드와 플레이어의 카드 두 장을 출력한다`() {
         val input = StubInput("pobi, jason", mapOf("pobi" to listOf(false), "jason" to listOf(false)))
@@ -51,7 +89,7 @@ class BlackjackGameTest {
         BlackjackGame(deck).start(input, output)
 
         assertThat(input.askedPlayers).containsExactly("pobi")
-        assertThat(output.playerResults).containsEntry("pobi", PlayerResult.LOSE)
+        assertThat(output.playerProfits).containsEntry("pobi", Amount.from("-10000"))
     }
 
     @Test
@@ -64,8 +102,8 @@ class BlackjackGameTest {
 
         assertThat(output.dealerHitCount).isEqualTo(1)
         assertThat(output.finalDealer).isEqualTo(record("딜러", 21, Rank.TEN, Rank.SIX, Rank.FIVE))
-        assertThat(output.playerResults).containsEntry("pobi", PlayerResult.LOSE)
-        assertThat(output.dealerRecord?.wins()).isEqualTo(1)
+        assertThat(output.playerProfits).containsEntry("pobi", Amount.from("-10000"))
+        assertThat(output.dealerProfit).isEqualTo(Amount.from("10000"))
     }
 
     @Test
@@ -77,8 +115,8 @@ class BlackjackGameTest {
         BlackjackGame(deck).start(input, output)
 
         assertThat(output.finalDealer).isEqualTo(record("딜러", 26, Rank.TEN, Rank.SIX, Rank.KING))
-        assertThat(output.playerResults).containsEntry("pobi", PlayerResult.WIN)
-        assertThat(output.dealerRecord?.losses()).isEqualTo(1)
+        assertThat(output.playerProfits).containsEntry("pobi", Amount.from("10000"))
+        assertThat(output.dealerProfit).isEqualTo(Amount.from("-10000"))
     }
 
     private fun cards(vararg ranks: Rank): List<Card> = ranks.map(::card)
@@ -95,11 +133,19 @@ class BlackjackGameTest {
 private class StubInput(
     private val names: String,
     decisions: Map<String, List<Boolean>>,
+    bettingAmounts: Map<String, String> = names.split(",").associate { it.trim() to "10000" },
 ) : GameInput {
     private val decisions = decisions.mapValues { ArrayDeque(it.value) }
+    private val bettingAmounts = bettingAmounts.mapValues { Amount.from(it.value) }
     val askedPlayers = mutableListOf<String>()
+    val askedBettingNames = mutableListOf<String>()
 
     override fun readPlayerNames(): String = names
+
+    override fun readBettingAmount(name: String): Amount {
+        askedBettingNames.add(name)
+        return bettingAmounts.getValue(name)
+    }
 
     override fun wantsHit(player: Player): Boolean {
         askedPlayers.add(player.name)
@@ -114,8 +160,9 @@ private class RecordingOutput : GameOutput {
     var dealerHitCount = 0
     var finalDealer: HandRecord? = null
     val finalPlayers = mutableListOf<HandRecord>()
-    var dealerRecord: DealerRecord? = null
-    val playerResults = mutableMapOf<String, PlayerResult>()
+    val initialBettingAmounts = linkedMapOf<String, Amount>()
+    val playerProfits = linkedMapOf<String, Amount>()
+    var dealerProfit: Amount? = null
 
     override fun showInitialHands(
         dealerCard: Card,
@@ -123,6 +170,7 @@ private class RecordingOutput : GameOutput {
     ) {
         initialDealerCard = dealerCard
         initialPlayers.addAll(players.map(::record))
+        initialBettingAmounts.putAll(players.associate { it.name to it.bettingAmount })
     }
 
     override fun showHand(player: Player) {
@@ -141,12 +189,9 @@ private class RecordingOutput : GameOutput {
         finalPlayers.addAll(players.map(::record))
     }
 
-    override fun showResults(
-        dealerRecord: DealerRecord,
-        playerResults: Map<Player, PlayerResult>,
-    ) {
-        this.dealerRecord = dealerRecord
-        this.playerResults.putAll(playerResults.mapKeys { it.key.name })
+    override fun showProfits(profitReport: ProfitReport) {
+        playerProfits.putAll(profitReport.playerProfits().mapKeys { it.key.name })
+        dealerProfit = profitReport.dealerProfit()
     }
 
     private fun record(participant: Participant): HandRecord = HandRecord(participant.name, participant.cards(), participant.score())

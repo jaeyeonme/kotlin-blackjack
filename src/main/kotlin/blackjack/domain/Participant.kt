@@ -11,4 +11,8 @@ abstract class Participant(
     fun cards(): List<Card> = hand.cards()
 
     fun score(): Int = hand.score()
+
+    fun isBlackjack(): Boolean = hand.isBlackjack()
+
+    fun isBust(): Boolean = hand.isBust()
 }
