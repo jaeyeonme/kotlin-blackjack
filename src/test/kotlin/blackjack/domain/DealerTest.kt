@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class DealerTest {
     @Test
     fun `플레이어와 딜러는 참가자의 카드 동작을 재사용한다`() {
-        assertThat(Player("pobi")).isInstanceOf(Participant::class.java)
+        assertThat(Player("pobi", Amount.from("10000"))).isInstanceOf(Participant::class.java)
         assertThat(Dealer()).isInstanceOf(Participant::class.java)
     }
 

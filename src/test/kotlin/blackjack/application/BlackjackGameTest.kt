@@ -1,6 +1,7 @@
 package blackjack.application
 
 import blackjack.domain.Card
+import blackjack.domain.Amount
 import blackjack.domain.Dealer
 import blackjack.domain.DealerRecord
 import blackjack.domain.Deck
@@ -13,6 +14,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class BlackjackGameTest {
+    @Test
+    fun `참가자별 베팅 금액을 입력받아 플레이어를 생성한다`() {
+        val input = StubInput("pobi, jason", emptyMap(), mapOf("pobi" to "10000", "jason" to "20000"))
+        val output = RecordingOutput()
+        val deck = Deck.ordered(cards(Rank.TEN, Rank.SEVEN, Rank.FIVE, Rank.SIX, Rank.EIGHT, Rank.NINE))
+
+        BlackjackGame(deck).start(input, output)
+
+        assertThat(input.askedBettingNames).containsExactly("pobi", "jason")
+        assertThat(output.initialBettingAmounts).containsExactlyEntriesOf(
+            mapOf("pobi" to Amount.from("10000"), "jason" to Amount.from("20000")),
+        )
+    }
+
     @Test
     fun `최초 배분에는 딜러의 첫 카드와 플레이어의 카드 두 장을 출력한다`() {
         val input = StubInput("pobi, jason", mapOf("pobi" to listOf(false), "jason" to listOf(false)))
@@ -95,11 +110,19 @@ class BlackjackGameTest {
 private class StubInput(
     private val names: String,
     decisions: Map<String, List<Boolean>>,
+    bettingAmounts: Map<String, String> = names.split(",").associate { it.trim() to "10000" },
 ) : GameInput {
     private val decisions = decisions.mapValues { ArrayDeque(it.value) }
+    private val bettingAmounts = bettingAmounts.mapValues { Amount.from(it.value) }
     val askedPlayers = mutableListOf<String>()
+    val askedBettingNames = mutableListOf<String>()
 
     override fun readPlayerNames(): String = names
+
+    override fun readBettingAmount(name: String): Amount {
+        askedBettingNames.add(name)
+        return bettingAmounts.getValue(name)
+    }
 
     override fun wantsHit(player: Player): Boolean {
         askedPlayers.add(player.name)
@@ -116,6 +139,7 @@ private class RecordingOutput : GameOutput {
     val finalPlayers = mutableListOf<HandRecord>()
     var dealerRecord: DealerRecord? = null
     val playerResults = mutableMapOf<String, PlayerResult>()
+    val initialBettingAmounts = linkedMapOf<String, Amount>()
 
     override fun showInitialHands(
         dealerCard: Card,
@@ -123,6 +147,7 @@ private class RecordingOutput : GameOutput {
     ) {
         initialDealerCard = dealerCard
         initialPlayers.addAll(players.map(::record))
+        initialBettingAmounts.putAll(players.associate { it.name to it.bettingAmount })
     }
 
     override fun showHand(player: Player) {
