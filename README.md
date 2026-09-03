@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | 1단계 - Kotlin DSL 학습 테스트 | 완료 | [Issue #1](https://github.com/jaeyeonme/kotlin-blackjack/issues/1) · [PR #2](https://github.com/jaeyeonme/kotlin-blackjack/pull/2) |
 | 2단계 - 플레이어 중심 블랙잭 | 완료 | [Issue #3](https://github.com/jaeyeonme/kotlin-blackjack/issues/3) · [PR #4](https://github.com/jaeyeonme/kotlin-blackjack/pull/4) |
-| 3단계 - 딜러와 승패 판정 | 진행 중 | [Issue #5](https://github.com/jaeyeonme/kotlin-blackjack/issues/5) |
+| 3단계 - 딜러와 승패 판정 | 구현 완료 · 리뷰 중 | [Issue #5](https://github.com/jaeyeonme/kotlin-blackjack/issues/5) · [PR #6](https://github.com/jaeyeonme/kotlin-blackjack/pull/6) |
 
 ## 3단계 기능 목록
 
