@@ -12,6 +12,8 @@ value class Amount private constructor(
 
     operator fun unaryMinus(): Amount = from(-value)
 
+    override fun toString(): String = value.toPlainString()
+
     companion object {
         val ZERO: Amount = from(BigDecimal.ZERO)
 

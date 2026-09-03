@@ -3,11 +3,10 @@ package blackjack.application
 import blackjack.domain.Amount
 import blackjack.domain.Card
 import blackjack.domain.Dealer
-import blackjack.domain.DealerRecord
 import blackjack.domain.Deck
 import blackjack.domain.Participant
 import blackjack.domain.Player
-import blackjack.domain.PlayerResult
+import blackjack.domain.ProfitReport
 import blackjack.domain.Rank
 import blackjack.domain.Suit
 import org.assertj.core.api.Assertions.assertThat
@@ -90,7 +89,7 @@ class BlackjackGameTest {
         BlackjackGame(deck).start(input, output)
 
         assertThat(input.askedPlayers).containsExactly("pobi")
-        assertThat(output.playerResults).containsEntry("pobi", PlayerResult.LOSE)
+        assertThat(output.playerProfits).containsEntry("pobi", Amount.from("-10000"))
     }
 
     @Test
@@ -103,8 +102,8 @@ class BlackjackGameTest {
 
         assertThat(output.dealerHitCount).isEqualTo(1)
         assertThat(output.finalDealer).isEqualTo(record("딜러", 21, Rank.TEN, Rank.SIX, Rank.FIVE))
-        assertThat(output.playerResults).containsEntry("pobi", PlayerResult.LOSE)
-        assertThat(output.dealerRecord?.wins()).isEqualTo(1)
+        assertThat(output.playerProfits).containsEntry("pobi", Amount.from("-10000"))
+        assertThat(output.dealerProfit).isEqualTo(Amount.from("10000"))
     }
 
     @Test
@@ -116,8 +115,8 @@ class BlackjackGameTest {
         BlackjackGame(deck).start(input, output)
 
         assertThat(output.finalDealer).isEqualTo(record("딜러", 26, Rank.TEN, Rank.SIX, Rank.KING))
-        assertThat(output.playerResults).containsEntry("pobi", PlayerResult.WIN)
-        assertThat(output.dealerRecord?.losses()).isEqualTo(1)
+        assertThat(output.playerProfits).containsEntry("pobi", Amount.from("10000"))
+        assertThat(output.dealerProfit).isEqualTo(Amount.from("-10000"))
     }
 
     private fun cards(vararg ranks: Rank): List<Card> = ranks.map(::card)
@@ -161,8 +160,6 @@ private class RecordingOutput : GameOutput {
     var dealerHitCount = 0
     var finalDealer: HandRecord? = null
     val finalPlayers = mutableListOf<HandRecord>()
-    var dealerRecord: DealerRecord? = null
-    val playerResults = mutableMapOf<String, PlayerResult>()
     val initialBettingAmounts = linkedMapOf<String, Amount>()
     val playerProfits = linkedMapOf<String, Amount>()
     var dealerProfit: Amount? = null
@@ -192,12 +189,9 @@ private class RecordingOutput : GameOutput {
         finalPlayers.addAll(players.map(::record))
     }
 
-    override fun showResults(
-        dealerRecord: DealerRecord,
-        playerResults: Map<Player, PlayerResult>,
-    ) {
-        this.dealerRecord = dealerRecord
-        this.playerResults.putAll(playerResults.mapKeys { it.key.name })
+    override fun showProfits(profitReport: ProfitReport) {
+        playerProfits.putAll(profitReport.playerProfits().mapKeys { it.key.name })
+        dealerProfit = profitReport.dealerProfit()
     }
 
     private fun record(participant: Participant): HandRecord = HandRecord(participant.name, participant.cards(), participant.score())
