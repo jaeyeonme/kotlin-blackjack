@@ -1,32 +1,70 @@
 package blackjack.application
 
+import blackjack.domain.Dealer
+import blackjack.domain.DealerRecord
 import blackjack.domain.Deck
+import blackjack.domain.Participant
 import blackjack.domain.Player
+import blackjack.domain.PlayerResult
 
 class BlackjackGame(
-    private val input: GameInput,
-    private val output: GameOutput,
     private val deck: Deck,
 ) {
-    fun start() {
+    fun start(
+        input: GameInput,
+        output: GameOutput,
+    ) {
+        val dealer = Dealer()
         val players = createPlayers(input.readPlayerNames())
-        players.forEach(::dealInitialCards)
-        output.showInitialHands(players)
-        players.forEach(::playTurn)
-        output.showFinalHands(players)
+        dealInitialCards(listOf(dealer) + players)
+        output.showInitialHands(dealer.cards().first(), players)
+        playPlayers(players, input, output)
+        playDealer(dealer, output)
+        output.showFinalHands(dealer, players)
+        showResults(dealer, players, output)
     }
 
     private fun createPlayers(names: String): List<Player> = names.split(",").map(String::trim).map(::Player)
 
-    private fun dealInitialCards(player: Player) {
-        repeat(INITIAL_CARD_COUNT) { player.receive(deck.draw()) }
+    private fun dealInitialCards(participants: List<Participant>) = participants.forEach(::dealTwoCards)
+
+    private fun dealTwoCards(participant: Participant) {
+        repeat(INITIAL_CARD_COUNT) { participant.receive(deck.draw()) }
     }
 
-    private fun playTurn(player: Player) {
+    private fun playPlayers(
+        players: List<Player>,
+        input: GameInput,
+        output: GameOutput,
+    ) = players.forEach { playTurn(it, input, output) }
+
+    private fun playTurn(
+        player: Player,
+        input: GameInput,
+        output: GameOutput,
+    ) {
         while (player.canHit() && input.wantsHit(player)) {
             player.receive(deck.draw())
             output.showHand(player)
         }
+    }
+
+    private fun playDealer(
+        dealer: Dealer,
+        output: GameOutput,
+    ) {
+        if (!dealer.shouldDraw()) return
+        dealer.receive(deck.draw())
+        output.showDealerHit()
+    }
+
+    private fun showResults(
+        dealer: Dealer,
+        players: List<Player>,
+        output: GameOutput,
+    ) {
+        val results = players.associateWith { PlayerResult.from(it.score(), dealer.score()) }
+        output.showResults(DealerRecord(results.values.toList()), results)
     }
 
     private companion object {

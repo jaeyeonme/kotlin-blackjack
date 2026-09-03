@@ -149,8 +149,7 @@ private class RecordingOutput : GameOutput {
         this.playerResults.putAll(playerResults.mapKeys { it.key.name })
     }
 
-    private fun record(participant: Participant): HandRecord =
-        HandRecord(participant.name, participant.cards(), participant.score())
+    private fun record(participant: Participant): HandRecord = HandRecord(participant.name, participant.cards(), participant.score())
 }
 
 private data class HandRecord(

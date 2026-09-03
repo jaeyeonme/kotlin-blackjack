@@ -6,5 +6,5 @@ import blackjack.view.ConsoleInputView
 import blackjack.view.ConsoleOutputView
 
 fun main() {
-    BlackjackGame(ConsoleInputView(), ConsoleOutputView(), Deck.shuffled()).start()
+    BlackjackGame(Deck.shuffled()).start(ConsoleInputView(), ConsoleOutputView())
 }
