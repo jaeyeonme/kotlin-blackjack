@@ -9,5 +9,5 @@ class DealerRecord(
 
     fun draws(): Int = results.count { it == PlayerResult.DRAW }
 
-    fun losses(): Int = results.count { it == PlayerResult.WIN }
+    fun losses(): Int = results.count { it == PlayerResult.WIN || it == PlayerResult.BLACKJACK }
 }

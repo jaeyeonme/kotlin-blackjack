@@ -68,7 +68,7 @@ class BlackjackGame(
         players: List<Player>,
         output: GameOutput,
     ) {
-        val results = players.associateWith { PlayerResult.from(it.score(), dealer.score()) }
+        val results = players.associateWith { PlayerResult.from(it, dealer) }
         output.showResults(DealerRecord(results.values.toList()), results)
     }
 

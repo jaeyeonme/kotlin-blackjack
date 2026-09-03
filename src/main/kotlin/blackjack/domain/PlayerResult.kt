@@ -1,25 +1,33 @@
 package blackjack.domain
 
-enum class PlayerResult {
-    WIN,
-    DRAW,
-    LOSE,
+import java.math.BigDecimal
+
+enum class PlayerResult(
+    private val profitMultiplier: BigDecimal,
+) {
+    BLACKJACK(BigDecimal("1.5")),
+    WIN(BigDecimal.ONE),
+    DRAW(BigDecimal.ZERO),
+    LOSE(BigDecimal.ONE.negate()),
     ;
+
+    fun profit(bettingAmount: Amount): Amount = bettingAmount * profitMultiplier
 
     companion object {
         fun from(
-            playerScore: Int,
-            dealerScore: Int,
+            player: Player,
+            dealer: Dealer,
         ): PlayerResult {
-            if (playerScore > BLACKJACK_SCORE) return LOSE
-            if (dealerScore > BLACKJACK_SCORE) return WIN
+            if (player.isBust()) return LOSE
+            if (player.isBlackjack() && dealer.isBlackjack()) return DRAW
+            if (player.isBlackjack()) return BLACKJACK
+            if (dealer.isBlackjack()) return LOSE
+            if (dealer.isBust()) return WIN
             return when {
-                playerScore > dealerScore -> WIN
-                playerScore < dealerScore -> LOSE
+                player.score() > dealer.score() -> WIN
+                player.score() < dealer.score() -> LOSE
                 else -> DRAW
             }
         }
-
-        private const val BLACKJACK_SCORE = 21
     }
 }

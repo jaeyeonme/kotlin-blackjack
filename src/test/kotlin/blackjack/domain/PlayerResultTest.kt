@@ -60,8 +60,7 @@ class PlayerResultTest {
         dealerScore: Int,
     ): PlayerResult = PlayerResult.from(playerWithScore(playerScore), dealerWithScore(dealerScore))
 
-    private fun playerWith(vararg ranks: Rank): Player =
-        Player("pobi", Amount.from("10000"), Hand(ranks.map(::card)))
+    private fun playerWith(vararg ranks: Rank): Player = Player("pobi", Amount.from("10000"), Hand(ranks.map(::card)))
 
     private fun dealerWith(vararg ranks: Rank): Dealer = Dealer().apply { ranks.map(::card).forEach(::receive) }
 

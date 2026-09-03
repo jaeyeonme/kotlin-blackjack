@@ -49,6 +49,7 @@ class ConsoleOutputView : GameOutput {
 
     private fun resultLabel(result: PlayerResult): String =
         when (result) {
+            PlayerResult.BLACKJACK -> "블랙잭"
             PlayerResult.WIN -> "승"
             PlayerResult.DRAW -> "무"
             PlayerResult.LOSE -> "패"

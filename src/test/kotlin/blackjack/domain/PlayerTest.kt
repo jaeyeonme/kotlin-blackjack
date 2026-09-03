@@ -49,8 +49,7 @@ class PlayerTest {
         assertThat(player.isBust()).isTrue()
     }
 
-    private fun playerWith(vararg ranks: Rank): Player =
-        Player("pobi", Amount.from("10000"), Hand(ranks.map(::card)))
+    private fun playerWith(vararg ranks: Rank): Player = Player("pobi", Amount.from("10000"), Hand(ranks.map(::card)))
 
     private fun card(rank: Rank): Card = Card(rank, Suit.SPADES)
 }
