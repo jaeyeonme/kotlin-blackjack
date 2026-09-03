@@ -46,8 +46,9 @@ class DeckTest {
             .hasMessage("덱에 카드가 없습니다.")
     }
 
-    private fun standardCards(): List<Card> =
-        Suit.entries.flatMap { suit -> Rank.entries.map { rank -> Card(rank, suit) } }
+    private fun standardCards(): List<Card> = Suit.entries.flatMap(::cardsOf)
+
+    private fun cardsOf(suit: Suit): List<Card> = Rank.entries.map { rank -> Card(rank, suit) }
 
     private fun card(rank: Rank): Card = Card(rank, Suit.SPADES)
 }
