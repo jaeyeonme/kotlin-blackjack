@@ -1,17 +1,9 @@
 package blackjack.domain
 
 class Player(
-    val name: String,
-    private val hand: Hand = Hand(),
-) {
-    fun receive(card: Card) {
-        hand.add(card)
-    }
-
-    fun cards(): List<Card> = hand.cards()
-
-    fun score(): Int = hand.score()
-
+    name: String,
+    hand: Hand = Hand(),
+) : Participant(name, hand) {
     fun canHit(): Boolean = score() <= BLACKJACK_SCORE
 
     private companion object {
